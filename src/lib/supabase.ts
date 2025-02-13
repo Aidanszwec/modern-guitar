@@ -2,14 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 import type { PostgrestError } from '@supabase/postgrest-js';
 
 // Validate environment variables
-if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-  console.error('Missing Supabase environment variables');
-  throw new Error('Missing Supabase environment variables');
-}
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://placeholder-url.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder-key';
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL, 
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+  supabaseUrl,
+  supabaseAnonKey,
   {
     db: { schema: 'public' },
     auth: { persistSession: false }
@@ -122,3 +120,5 @@ export async function addUserSignup(userData: UserSignupData) {
     }
   }
 }
+
+export { supabase };
