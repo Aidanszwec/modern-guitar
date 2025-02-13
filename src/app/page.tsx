@@ -5,6 +5,7 @@ import Link from "next/link";
 import { FaGuitar, FaMusic, FaGraduationCap } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSignup } from '../context/SignupContext';
+import SignupModal from '../SignupModal';
 import { useState, useCallback } from "react";
 
 interface NavLinkProps {
@@ -66,19 +67,20 @@ const ClientComponent = () => {
   }, [currentEmojiIndex]);
 
   const handleTabLibraryClick = () => {
-    openSignupModal();
+    openSignupModal(['Select Your Favorite Artists (choose multiple)', 'What features do you want to see? (optional)']);
   };
 
   const handleJamRoomClick = () => {
-    openSignupModal();
+    openSignupModal(['Select Your Favorite Artists (choose multiple)', 'What features do you want to see? (optional)']);
   };
 
   const handleLearnClick = () => {
-    openSignupModal();
+    openSignupModal(['Select Your Favorite Artists (choose multiple)', 'What features do you want to see? (optional)']);
   };
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-black text-white">
+      <SignupModal />
       {/* Hero Section */}
       <div className="relative h-screen overflow-hidden" onMouseMove={handleMouseMove}>
         <div className="absolute inset-0 bg-gradient-to-r from-purple-900 to-blue-900 mix-blend-multiply opacity-70" />
@@ -130,7 +132,7 @@ const ClientComponent = () => {
               <motion.button 
                 whileHover={{ scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => openSignupModal(['What features do you want to see? (optional)', 'Select Your Favorite Artists (choose multiple)'])}
+                onClick={handleTabLibraryClick}
                 className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-2 rounded-xl flex-1 relative overflow-hidden group sm:px-12 sm:py-6 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-shadow"
               >
                 <span className="relative z-10 text-xl sm:text-3xl font-bold flex items-center justify-center gap-3">
@@ -141,7 +143,7 @@ const ClientComponent = () => {
               <motion.button 
                 whileHover={{ scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => openSignupModal(['What genre do you want to jam with?'])}
+                onClick={handleJamRoomClick}
                 className="bg-gradient-to-r from-purple-600 to-purple-800 text-white px-8 py-2 rounded-xl flex-1 relative overflow-hidden group sm:px-12 sm:py-6 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-shadow"
               >
                 <span className="relative z-10 text-xl sm:text-3xl font-bold flex items-center justify-center gap-3">

@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
-import type { PostgrestError } from '@supabase/supabase-js';
+import type { PostgrestError } from '@supabase/postgrest-js';
 
 // Validate environment variables
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -33,25 +33,23 @@ const logError = (context: string, error: ErrorWithDetails) => {
   });
 };
 
-// Create beta_signups table if it doesn't exist
+// Check if beta_signups table exists
 const createBetaSignupsTable = async () => {
   try {
     console.log('Checking if beta_signups table exists');
-    
-    // Try to query the table
+
+    // Query the table
     const { error: queryError } = await supabase
       .from('beta_signups')
       .select('id')
       .limit(1);
 
-    // If there's no error, table exists
     if (!queryError) {
       console.log('beta_signups table already exists');
       return;
     }
 
-    // If table doesn't exist, create it through the dashboard
-    console.log('beta_signups table does not exist. Please create it through the Supabase dashboard with the following structure:');
+    console.log('beta_signups table does not exist. Please create it in Supabase:');
     console.log(`
       Table Name: beta_signups
       Columns:
@@ -71,7 +69,7 @@ const createBetaSignupsTable = async () => {
   }
 };
 
-interface UserSignupData {
+export interface UserSignupData {
   name: string;
   email: string;
   genres: string[];
@@ -80,7 +78,7 @@ interface UserSignupData {
   featuresRequest?: string;
 }
 
-const addUserSignup = async (userData: UserSignupData) => {
+export async function addUserSignup(userData: UserSignupData) {
   try {
     if (!userData.name || userData.name.trim() === '') {
       throw new Error('Name is required and cannot be empty');
@@ -93,9 +91,9 @@ const addUserSignup = async (userData: UserSignupData) => {
     const sanitizedData = {
       name: userData.name.trim(),
       email: userData.email.trim().toLowerCase(),
-      genres: userData.genres || [],
+      genres: Array.isArray(userData.genres) ? userData.genres : [],
       experience_level: userData.experienceLevel || '',
-      favorite_artists: userData.favoriteArtists || [],
+      favorite_artists: Array.isArray(userData.favoriteArtists) ? userData.favoriteArtists : [],
       features_request: userData.featuresRequest || '',
       created_at: new Date().toISOString()
     };
@@ -106,43 +104,21 @@ const addUserSignup = async (userData: UserSignupData) => {
       .select();
 
     if (error) {
-      if (error instanceof PostgrestError) {
-        logError('Insertion Error', error);
-        switch (error.code) {
-          case '23505':
-            throw new Error('An account with this email already exists');
-          case '23502':
-            throw new Error('Missing required fields');
-          default:
-            throw new Error(`Database insertion failed: ${error.message}`);
-        }
-      } else {
-        throw error;
+      logError('Insertion Error', error);
+      if ((error as PostgrestError).code === '23505') {
+        throw new Error('An account with this email already exists');
       }
+      if ((error as PostgrestError).code === '23502') {
+        throw new Error('Missing required field');
+      }
+      throw new Error(error.message);
     }
 
     return data;
   } catch (error) {
     if (error instanceof Error) {
-      logError('Signup Process', error);
-      throw new Error(
-        error.message 
-      );
-    } else {
+      logError('Signup Error', error);
       throw error;
     }
   }
-};
-
-// Initialize table check
-createBetaSignupsTable().catch(error => {
-  if (error instanceof Error) {
-    console.error('Failed to check table existence:', error);
-  }
-});
-
-// Export the initialized client
-export default {
-  client: supabase,
-  addUserSignup
-};
+}

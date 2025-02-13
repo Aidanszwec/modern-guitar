@@ -4,7 +4,8 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaGuitar, FaTimes, FaExclamationCircle } from 'react-icons/fa';
 import { useSignup } from './context/SignupContext';
-import supabaseClient from './lib/supabase';
+import { addUserSignup } from '@/lib/supabase'; 
+
 
 const GENRES = [
   'Rock', 'Blues', 'Jazz', 'Classical', 
@@ -19,8 +20,14 @@ const EXPERIENCE_LEVELS = [
   'Professional'
 ];
 
+const FAVORITE_ARTISTS = [
+  'Jimi Hendrix', 'Eric Clapton', 'Jimmy Page', 'Eddie Van Halen',
+  'Steve Vai', 'Joe Satriani', 'John Mayer', 'B.B. King',
+  'Carlos Santana', 'David Gilmour', 'Slash', 'John Petrucci'
+];
+
 const SignupModal: React.FC = () => {
-  const { isOpen, closeSignupModal } = useSignup();
+  const { isOpen, closeSignupModal, customFields } = useSignup();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
@@ -30,22 +37,34 @@ const SignupModal: React.FC = () => {
     genres: [] as string[],
     experienceLevel: '',
     favoriteArtists: [] as string[],
-    featuresRequest: ''
+    featuresRequest: '',
+    style: { color: 'black' }
   });
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: value,
+      style: { color: 'black' }
     }));
   };
 
-  const handleMultiSelectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
+  const toggleGenre = (genre: string) => {
     setFormData(prev => ({
       ...prev,
-      [name]: value.split(',').map(item => item.trim()).filter(Boolean)
+      genres: prev.genres.includes(genre)
+        ? prev.genres.filter(g => g !== genre)
+        : [...prev.genres, genre]
+    }));
+  };
+
+  const toggleArtist = (artist: string) => {
+    setFormData(prev => ({
+      ...prev,
+      favoriteArtists: prev.favoriteArtists.includes(artist)
+        ? prev.favoriteArtists.filter(a => a !== artist)
+        : [...prev.favoriteArtists, artist]
     }));
   };
 
@@ -81,24 +100,18 @@ const SignupModal: React.FC = () => {
     }
 
     try {
-      const { data, error } = await supabaseClient
-        .from('beta_signups')
-        .insert([{
-          name: formData.name,
-          email: formData.email,
-          genres: formData.genres,
-          experience_level: formData.experienceLevel,
-          favorite_artists: formData.favoriteArtists,
-          features_request: formData.featuresRequest
-        }])
-        .select();
+      const response = await addUserSignup({
+        name: formData.name,
+        email: formData.email,
+        genres: formData.genres,
+        experienceLevel: formData.experienceLevel,
+        favoriteArtists: formData.favoriteArtists,
+        featuresRequest: formData.featuresRequest
+      });
 
-      if (error) {
-        throw error;
+      if (response) {
+        setIsSuccess(true);
       }
-
-      console.log('Signup successful:', data);
-      setIsSuccess(true);
     } catch (error) {
       if (error instanceof Error) {
         setSubmitError(error.message);
@@ -117,163 +130,199 @@ const SignupModal: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 overflow-y-auto"
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/75"
         >
-          <div className="min-h-screen px-4 text-center">
-            <div className="fixed inset-0 bg-black/75" onClick={closeSignupModal} />
-            
+          <div className="min-h-screen w-full px-4 py-6 flex items-start justify-center">
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="inline-block w-full max-w-2xl p-8 my-8 text-left align-middle bg-gray-900 rounded-2xl border border-gray-800 shadow-xl transform transition-all relative"
+              className="w-full max-w-2xl relative mt-4"
             >
-              <button 
-                onClick={closeSignupModal} 
-                className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
-              >
-                <FaTimes className="w-6 h-6" />
-              </button>
-
-              <div className="text-center space-y-4 mb-8">
-                <div className="flex items-center justify-center mb-4">
-                  <FaGuitar className="text-6xl text-purple-500 mr-4" />
-                  <h1 className="text-4xl font-bold tracking-tight text-white">Modern Guitar</h1>
-                </div>
-                
-                <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-                  We&apos;re crafting the ultimate platform for guitar enthusiasts. Join our waitlist and be part of the journey!
-                </p>
-              </div>
-
-              {submitError && (
-                <div className="bg-red-900/20 border border-red-500 text-red-300 p-4 rounded-xl flex items-center mb-6">
-                  <FaExclamationCircle className="flex-shrink-0 w-5 h-5 mr-3" />
-                  <p>{submitError}</p>
-                </div>
-              )}
-
-              {isSuccess ? (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="text-center py-8"
-                >
-                  <FaGuitar className="mx-auto text-6xl text-purple-500 mb-4" />
-                  <h3 className="text-2xl font-bold text-white mb-2">Thank you for signing up!</h3>
-                  <p className="text-gray-300">We&apos;ll keep you updated on our progress.</p>
-                </motion.div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                      Name
-                    </label>
-                    <input
-                      type="text"
-                      id="name"
-                      name="name"
-                      value={formData.name}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                      placeholder="Your name"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                      Email
-                    </label>
-                    <input
-                      type="email"
-                      id="email"
-                      name="email"
-                      value={formData.email}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                      placeholder="you@example.com"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="genres" className="block text-sm font-medium text-gray-300 mb-2">
-                      Favorite Genres (comma-separated)
-                    </label>
-                    <input
-                      type="text"
-                      id="genres"
-                      name="genres"
-                      value={formData.genres.join(', ')}
-                      onChange={handleMultiSelectChange}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                      placeholder="Rock, Blues, Jazz"
-                    />
-                    <p className="mt-2 text-sm text-gray-400">
-                      Suggestions: {GENRES.join(', ')}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label htmlFor="experienceLevel" className="block text-sm font-medium text-gray-300 mb-2">
-                      Experience Level
-                    </label>
-                    <select
-                      id="experienceLevel"
-                      name="experienceLevel"
-                      value={formData.experienceLevel}
-                      onChange={e => setFormData(prev => ({ ...prev, experienceLevel: e.target.value }))}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                    >
-                      <option value="">Select your level</option>
-                      {EXPERIENCE_LEVELS.map(level => (
-                        <option key={level} value={level}>{level}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label htmlFor="favoriteArtists" className="block text-sm font-medium text-gray-300 mb-2">
-                      Favorite Artists/Bands (comma-separated)
-                    </label>
-                    <input
-                      type="text"
-                      id="favoriteArtists"
-                      name="favoriteArtists"
-                      value={formData.favoriteArtists.join(', ')}
-                      onChange={handleMultiSelectChange}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                      placeholder="Led Zeppelin, Pink Floyd, Eric Clapton"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="featuresRequest" className="block text-sm font-medium text-gray-300 mb-2">
-                      What features would you like to see? (Optional)
-                    </label>
-                    <textarea
-                      id="featuresRequest"
-                      name="featuresRequest"
-                      value={formData.featuresRequest}
-                      onChange={handleInputChange}
-                      rows={4}
-                      className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-purple-500"
-                      placeholder="Tell us what features would be most helpful for your guitar journey..."
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className={`w-full py-3 px-4 rounded-lg text-white font-medium transition-colors ${
-                      isSubmitting 
-                        ? 'bg-purple-700 cursor-not-allowed'
-                        : 'bg-purple-600 hover:bg-purple-500'
-                    }`}
+              <div className="bg-gradient-to-b from-gray-900/95 to-gray-900/90 backdrop-blur-md rounded-2xl shadow-2xl shadow-purple-500/10 overflow-hidden">
+                <div className="sticky top-0 z-10 pt-4 px-4 bg-gradient-to-b from-gray-900/95 to-gray-900/90">
+                  <button 
+                    onClick={closeSignupModal} 
+                    className="absolute top-4 right-4 text-gray-400 hover:text-purple-400 transition-colors"
                   >
-                    {isSubmitting ? 'Signing up...' : 'Join the Waitlist'}
+                    <FaTimes className="w-6 h-6" />
                   </button>
-                </form>
-              )}
+                </div>
+                <div className="p-12 pt-8 overflow-y-auto custom-scrollbar">
+                  {isSuccess ? (
+                    <div className="text-center space-y-6">
+                      <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                        Thank you 🎵
+                      </h2>
+                      <p className="text-xl text-gray-300">
+                        Check your email, you will be jammin' in no time.
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="text-center space-y-6 mb-10">
+                        <div className="flex items-center justify-center mb-6">
+                          <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-400">
+                            Modern Guitar
+                          </h2>
+                          <FaGuitar className="text-6xl text-purple-500 ml-4" />
+                        </div>
+                        <p className="text-xl text-gray-300">
+                          The only guitar platform you'll ever need. Join our waitlist and be part of the journey.
+                        </p>
+                      </div>
+
+                      {submitError && (
+                        <div className="bg-red-900/20 border border-red-500 text-red-300 p-4 rounded-xl flex items-center mb-8">
+                          <FaExclamationCircle className="flex-shrink-0 w-5 h-5 mr-3" />
+                          <p>{submitError}</p>
+                        </div>
+                      )}
+
+                      <form onSubmit={handleSubmit} className="space-y-8">
+                        <div className="space-y-8">
+                          <div>
+                            <label htmlFor="name" className="block text-base font-medium text-white mb-2">
+                              Name
+                            </label>
+                            <input
+                              type="text"
+                              id="name"
+                              name="name"
+                              value={formData.name}
+                              onChange={handleInputChange}
+                              style={{ color: 'black' }}
+                              className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border-0 rounded-lg shadow-lg focus:ring-2 focus:ring-purple-500/50 focus:shadow-purple-500/20 transition-all placeholder:text-gray-500"
+                              placeholder="Your name"
+                              required
+                            />
+                          </div>
+                          
+                          <div>
+                            <label htmlFor="email" className="block text-base font-medium text-white mb-2">
+                              Email
+                            </label>
+                            <input
+                              type="email"
+                              id="email"
+                              name="email"
+                              value={formData.email}
+                              onChange={handleInputChange}
+                              style={{ color: 'black' }}
+                              className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border-0 rounded-lg shadow-lg focus:ring-2 focus:ring-purple-500/50 focus:shadow-purple-500/20 transition-all placeholder:text-gray-500"
+                              placeholder="your@email.com"
+                              required
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-base font-medium text-white mb-3">
+                              Favorite Genres
+                            </label>
+                            <div className="flex flex-wrap gap-2">
+                              {GENRES.map((genre) => (
+                                <motion.button
+                                  key={genre}
+                                  type="button"
+                                  onClick={() => toggleGenre(genre)}
+                                  whileHover={{ scale: 1.05 }}
+                                  whileTap={{ scale: 0.95 }}
+                                  className={`px-4 py-2 rounded-lg transition-all ${
+                                    formData.genres.includes(genre)
+                                      ? 'bg-gradient-to-r from-purple-600 to-purple-700 shadow-lg shadow-purple-500/20'
+                                      : 'bg-white/5 backdrop-blur-sm hover:bg-white/10'
+                                  }`}
+                                >
+                                  {genre}
+                                </motion.button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div>
+                            <label htmlFor="experienceLevel" className="block text-base font-medium text-white mb-2">
+                              Experience Level
+                            </label>
+                            <select
+                              id="experienceLevel"
+                              name="experienceLevel"
+                              value={formData.experienceLevel}
+                              onChange={handleInputChange}
+                              style={{ color: 'black' }}
+                              className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border-0 rounded-lg shadow-lg focus:ring-2 focus:ring-purple-500/50 focus:shadow-purple-500/20 transition-all"
+                              required
+                            >
+                              <option value="" className="text-gray-400">Select your level</option>
+                              {EXPERIENCE_LEVELS.map((level) => (
+                                <option key={level} value={level} className="text-gray-900 bg-white">{level}</option>
+                              ))}
+                            </select>
+                          </div>
+
+                          {customFields.includes('Select Your Favorite Artists (choose multiple)') && (
+                            <div>
+                              <label className="block text-base font-medium text-white mb-3">
+                                Favorite Artists
+                              </label>
+                              <div className="flex flex-wrap gap-2">
+                                {FAVORITE_ARTISTS.map((artist) => (
+                                  <motion.button
+                                    key={artist}
+                                    type="button"
+                                    onClick={() => toggleArtist(artist)}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`px-4 py-2 rounded-lg transition-all ${
+                                      formData.favoriteArtists.includes(artist)
+                                        ? 'bg-gradient-to-r from-purple-600 to-purple-700 shadow-lg shadow-purple-500/20'
+                                        : 'bg-white/5 backdrop-blur-sm hover:bg-white/10'
+                                    }`}
+                                  >
+                                    {artist}
+                                  </motion.button>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {customFields.includes('What features do you want to see? (optional)') && (
+                            <div>
+                              <label htmlFor="featuresRequest" className="block text-base font-medium text-white mb-2">
+                                What features would you like to see?
+                              </label>
+                              <textarea
+                                id="featuresRequest"
+                                name="featuresRequest"
+                                value={formData.featuresRequest}
+                                onChange={handleInputChange}
+                                style={{ color: 'black' }}
+                                className="w-full px-4 py-3 bg-white/90 backdrop-blur-sm border-0 rounded-lg shadow-lg focus:ring-2 focus:ring-purple-500/50 focus:shadow-purple-500/20 transition-all placeholder:text-gray-500"
+                                placeholder="Tell us what features you'd like..."
+                                rows={4}
+                              />
+                            </div>
+                          )}
+                        </div>
+
+                        <motion.button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="w-full px-6 py-3 text-lg font-semibold text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg hover:from-purple-500 hover:to-purple-600 shadow-lg shadow-purple-500/20 hover:shadow-purple-500/30 focus:ring-2 focus:ring-purple-500/50 focus:ring-offset-0 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          {isSubmitting ? (
+                            <div className="flex items-center justify-center">
+                              <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
+                              Submitting...
+                            </div>
+                          ) : (
+                            'Join Waitlist'
+                          )}
+                        </motion.button>
+                      </form>
+                    </>
+                  )}
+                </div>
+              </div>
             </motion.div>
           </div>
         </motion.div>
