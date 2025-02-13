@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import type { PostgrestError } from '@supabase/supabase-js';
 
 // Validate environment variables
 if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
@@ -6,7 +7,7 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
   throw new Error('Missing Supabase environment variables');
 }
 
-export const supabase = createClient(
+const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL, 
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   {
@@ -16,7 +17,13 @@ export const supabase = createClient(
 );
 
 // Enhanced logging function
-const logError = (context: string, error: any) => {
+interface ErrorWithDetails extends Error {
+  code?: string;
+  details?: string;
+  hint?: string;
+}
+
+const logError = (context: string, error: ErrorWithDetails) => {
   console.error(`[Supabase Error - ${context}]`, {
     message: error.message,
     code: error.code,
@@ -29,62 +36,52 @@ const logError = (context: string, error: any) => {
 // Create beta_signups table if it doesn't exist
 const createBetaSignupsTable = async () => {
   try {
-    console.log('Attempting to ensure beta_signups table exists');
+    console.log('Checking if beta_signups table exists');
     
-    // First check if the table exists
-    const { data: existingTable, error: checkError } = await supabase
+    // Try to query the table
+    const { error: queryError } = await supabase
       .from('beta_signups')
       .select('id')
       .limit(1);
 
-    if (checkError && checkError.code !== 'PGRST116') {
-      // If error is not "relation does not exist", then it's a different issue
-      throw checkError;
+    // If there's no error, table exists
+    if (!queryError) {
+      console.log('beta_signups table already exists');
+      return;
     }
 
-    if (!existingTable) {
-      // Table doesn't exist, create it
-      const { error } = await supabase
-        .from('beta_signups')
-        .insert([]) // This will fail if table doesn't exist
-        .select();
-
-      if (error && error.code === 'PGRST204') {
-        // Table doesn't exist, create it using RPC or direct SQL if you have permission
-        const { error: createError } = await supabase.sql(`
-          CREATE TABLE IF NOT EXISTS beta_signups (
-            id SERIAL PRIMARY KEY,
-            name TEXT,
-            email TEXT,
-            genres TEXT[],
-            experience_level TEXT,
-            favorite_artists TEXT[],
-            created_at TIMESTAMPTZ DEFAULT NOW()
-          );
-        `);
-
-        if (createError) {
-          console.error('Failed to create table:', createError);
-          // Don't throw here, just log the error
-        }
-      }
-    }
+    // If table doesn't exist, create it through the dashboard
+    console.log('beta_signups table does not exist. Please create it through the Supabase dashboard with the following structure:');
+    console.log(`
+      Table Name: beta_signups
+      Columns:
+      - id: uuid (primary key)
+      - name: text
+      - email: text
+      - genres: text[]
+      - experience_level: text
+      - favorite_artists: text[]
+      - features_request: text
+      - created_at: timestamptz (default: now())
+    `);
   } catch (error) {
-    logError('Table Creation Catch', error);
-    // Don't throw here, just log the error
+    if (error instanceof Error) {
+      logError('Table Check', error);
+    }
   }
 };
 
-export const addUserSignup = async (userData: {
+interface UserSignupData {
   name: string;
   email: string;
   genres: string[];
   experienceLevel: string;
   favoriteArtists: string[];
   featuresRequest?: string;
-}) => {
+}
+
+const addUserSignup = async (userData: UserSignupData) => {
   try {
-    // Comprehensive input validation
     if (!userData.name || userData.name.trim() === '') {
       throw new Error('Name is required and cannot be empty');
     }
@@ -93,7 +90,6 @@ export const addUserSignup = async (userData: {
       throw new Error('Valid email is required');
     }
 
-    // Sanitize and prepare data
     const sanitizedData = {
       name: userData.name.trim(),
       email: userData.email.trim().toLowerCase(),
@@ -104,45 +100,49 @@ export const addUserSignup = async (userData: {
       created_at: new Date().toISOString()
     };
 
-    console.log('Attempting to insert user data:', sanitizedData);
-
-    // Perform the insert with detailed error handling
     const { data, error } = await supabase
       .from('beta_signups')
       .insert(sanitizedData)
       .select();
 
     if (error) {
-      logError('Insertion Error', error);
-
-      // Specific error handling
-      switch (error.code) {
-        case '23505': // Unique constraint violation
-          throw new Error('An account with this email already exists');
-        case '23502': // Not null violation
-          throw new Error('Missing required fields');
-        default:
-          throw new Error(`Database insertion failed: ${error.message}`);
+      if (error instanceof PostgrestError) {
+        logError('Insertion Error', error);
+        switch (error.code) {
+          case '23505':
+            throw new Error('An account with this email already exists');
+          case '23502':
+            throw new Error('Missing required fields');
+          default:
+            throw new Error(`Database insertion failed: ${error.message}`);
+        }
+      } else {
+        throw error;
       }
     }
 
-    console.log('User signup successful:', data);
     return data;
   } catch (error) {
-    logError('Signup Process', error);
-    
-    // Rethrow with a user-friendly message
-    throw new Error(
-      error instanceof Error 
-        ? error.message 
-        : 'An unexpected error occurred during signup. Please try again.'
-    );
+    if (error instanceof Error) {
+      logError('Signup Process', error);
+      throw new Error(
+        error.message 
+      );
+    } else {
+      throw error;
+    }
   }
 };
 
-// Ensure table exists on module import
+// Initialize table check
 createBetaSignupsTable().catch(error => {
-  console.error('Failed to ensure table exists on import:', error);
+  if (error instanceof Error) {
+    console.error('Failed to check table existence:', error);
+  }
 });
 
-export default { supabase, addUserSignup };
+// Export the initialized client
+export default {
+  client: supabase,
+  addUserSignup
+};

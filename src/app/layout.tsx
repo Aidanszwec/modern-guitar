@@ -1,16 +1,25 @@
-import { metadata } from './metadata'
-import { Inter } from 'next/font/google'
-import './globals.css'
-import RootLayoutClient from './layout-client'
+import type { Metadata } from 'next';
+import { Inter } from 'next/font/google';
+import './globals.css';
+import LayoutClient from './layout-client';
 
-const inter = Inter({ subsets: ['latin'] })
-
-export { metadata }
+export const metadata: Metadata = {
+  title: 'Modern Guitar',
+  description: 'The ultimate platform for guitar enthusiasts',
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
-  return <RootLayoutClient>{children}</RootLayoutClient>
+  return (
+    <html lang="en">
+      <body>
+        <LayoutClient>
+          {children}
+        </LayoutClient>
+      </body>
+    </html>
+  );
 }

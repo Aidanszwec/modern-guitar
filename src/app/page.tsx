@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FaGuitar, FaMusic, FaGraduationCap } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { useSignup } from '../context/SignupContext';
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 
 interface NavLinkProps {
   href: string;
@@ -64,21 +64,6 @@ const ClientComponent = () => {
       ]);
     }
   }, [currentEmojiIndex]);
-
-  useEffect(() => {
-    const emojiTimer = setInterval(() => {
-      setCurrentEmojiIndex((prevIndex) => (prevIndex + 1) % musicEmojis.length);
-    }, 5000); // Change emoji every 5 seconds
-
-    const cleanupTimer = setInterval(() => {
-      setEmojis((prevEmojis) => prevEmojis.slice(-20));
-    }, 100);
-
-    return () => {
-      clearInterval(emojiTimer);
-      clearInterval(cleanupTimer);
-    };
-  }, []);
 
   const handleTabLibraryClick = () => {
     openSignupModal();
