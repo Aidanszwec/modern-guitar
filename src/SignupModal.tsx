@@ -70,49 +70,41 @@ const SignupModal: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setSubmitError('');
-
-    const validationErrors: string[] = [];
-
-    if (!formData.name.trim()) {
-      validationErrors.push('Please enter your name');
-    }
-
-    if (!formData.email.trim()) {
-      validationErrors.push('Please enter your email');
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      validationErrors.push('Please enter a valid email address');
-    }
-
-    if (formData.genres.length === 0) {
-      validationErrors.push('Please select at least one genre');
-    }
-
-    if (!formData.experienceLevel) {
-      validationErrors.push('Please select your experience level');
-    }
-
-    if (validationErrors.length > 0) {
-      setSubmitError(validationErrors.join('. '));
-      setIsSubmitting(false);
-      return;
-    }
-
     try {
+      setSubmitError('');
+      setIsSubmitting(true);
+
+      if (!formData.email || !formData.name) {
+        throw new Error('Please fill in all required fields');
+      }
+
       const response = await addUserSignup({
-        name: formData.name,
-        email: formData.email,
+        name: formData.name.trim(),
+        email: formData.email.trim().toLowerCase(),
         genres: formData.genres,
         experienceLevel: formData.experienceLevel,
         favoriteArtists: formData.favoriteArtists,
-        featuresRequest: formData.featuresRequest
+        featuresRequest: formData.featuresRequest?.trim()
       });
 
       if (response) {
         setIsSuccess(true);
+        setTimeout(() => {
+          closeSignupModal();
+          setIsSuccess(false);
+          setFormData({
+            name: '',
+            email: '',
+            genres: [],
+            experienceLevel: '',
+            favoriteArtists: [],
+            featuresRequest: '',
+            style: { color: 'black' }
+          });
+        }, 2000);
       }
     } catch (error) {
+      console.error('Signup Error:', error);
       if (error instanceof Error) {
         setSubmitError(error.message);
       } else {
