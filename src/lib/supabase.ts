@@ -6,7 +6,7 @@ if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_A
   throw new Error('Missing Supabase environment variables');
 }
 
-const supabase = createClient(
+export const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL, 
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   {
@@ -145,6 +145,4 @@ createBetaSignupsTable().catch(error => {
   console.error('Failed to ensure table exists on import:', error);
 });
 
-// Exporting the supabase client and the addUserSignup function
-export { supabase, addUserSignup };
-export default supabase;
+export default { supabase, addUserSignup };
