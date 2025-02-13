@@ -37,3 +37,23 @@ body {
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: rgba(139, 92, 246, 0.7);
 }
+
+/* Mobile optimization */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Prevent unwanted zoom on inputs in iOS */
+input, select, textarea {
+  font-size: 16px; /* Prevents iOS zoom on focus */
+}
+
+@supports (-webkit-touch-callout: none) {
+  /* CSS specific to iOS devices */
+  body {
+    /* Prevent scroll bounce on iOS */
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: none;
+  }
+}

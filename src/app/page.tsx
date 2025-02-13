@@ -100,14 +100,14 @@ const ClientComponent = () => {
               transition={{ duration: 0.6 }}
               className="inline-block bg-blue-500/10 px-6 py-2 rounded-lg mb-4"
             >
-              <span className="text-xl font-bold text-blue-400 tracking-wider uppercase rotate-[-5deg]">⚡ A new way of playing guitar ⚡</span>
+              <span className="text-base md:text-xl font-bold text-blue-400 tracking-wider uppercase rotate-[-5deg]">⚡ A new way of playing guitar ⚡</span>
             </motion.div>
             
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-9xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 tracking-tight drop-shadow-2xl text-center"
+              className="text-5xl md:text-7xl lg:text-9xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 tracking-tight drop-shadow-2xl text-center"
             >
                Modern Guitar🎸
             </motion.h1>
@@ -116,27 +116,27 @@ const ClientComponent = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="text-4xl font-semibold text-gray-100 mb-12 leading-relaxed drop-shadow-lg"
+              className="text-2xl md:text-3xl lg:text-4xl font-semibold text-gray-100 mb-12 leading-relaxed drop-shadow-lg"
             >
               Play, Practice, & Gig
               <span className="text-purple-400"> For Guitarists by Guitarists</span>
-              <span className="block mt-4 text-2xl text-gray-300">Learn your favorite songs • Jam over adjustable jam tracks • Join the community</span>
+              <span className="block mt-4 text-lg md:text-xl lg:text-2xl text-gray-300">Learn your favorite songs • Jam over adjustable jam tracks • Join the community</span>
             </motion.p>
 
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.6 }}
-              className="flex flex-col sm:flex-row gap-8 justify-center mb-20 w-full max-w-4xl mx-auto"
+              className="flex flex-col sm:flex-row gap-4 md:gap-8 justify-center mb-20 w-full max-w-4xl mx-auto px-4 md:px-0"
             >
               <motion.button 
                 whileHover={{ scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleTabLibraryClick}
-                className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-8 py-2 rounded-xl flex-1 relative overflow-hidden group sm:px-12 sm:py-6 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-shadow"
+                className="bg-gradient-to-r from-blue-600 to-blue-800 text-white px-6 py-4 md:px-8 md:py-2 rounded-xl flex-1 relative overflow-hidden group sm:px-12 sm:py-6 shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-shadow"
               >
-                <span className="relative z-10 text-xl sm:text-3xl font-bold flex items-center justify-center gap-3">
-                  <FaGuitar className="w-5 h-5 sm:w-8 sm:h-8" />
+                <span className="relative z-10 text-lg md:text-xl lg:text-3xl font-bold flex items-center justify-center gap-3">
+                  <FaGuitar className="w-4 h-4 md:w-5 md:h-5 lg:w-8 lg:h-8" />
                   Find Tabs
                 </span>
               </motion.button>
@@ -144,10 +144,10 @@ const ClientComponent = () => {
                 whileHover={{ scale: 1.05, boxShadow: "0 4px 20px rgba(0, 0, 0, 0.3)" }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleJamRoomClick}
-                className="bg-gradient-to-r from-purple-600 to-purple-800 text-white px-8 py-2 rounded-xl flex-1 relative overflow-hidden group sm:px-12 sm:py-6 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-shadow"
+                className="bg-gradient-to-r from-purple-600 to-purple-800 text-white px-6 py-4 md:px-8 md:py-2 rounded-xl flex-1 relative overflow-hidden group sm:px-12 sm:py-6 shadow-md shadow-purple-500/20 hover:shadow-lg hover:shadow-purple-500/30 transition-shadow"
               >
-                <span className="relative z-10 text-xl sm:text-3xl font-bold flex items-center justify-center gap-3">
-                  <FaMusic className="w-5 h-5 sm:w-8 sm:h-8" />
+                <span className="relative z-10 text-lg md:text-xl lg:text-3xl font-bold flex items-center justify-center gap-3">
+                  <FaMusic className="w-4 h-4 md:w-5 md:h-5 lg:w-8 lg:h-8" />
                   Jam Room
                 </span>
               </motion.button>
