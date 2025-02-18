@@ -83,16 +83,42 @@ const ClientComponent = () => {
       <SignupModal />
       {/* Hero Section */}
       <div className="relative h-screen overflow-hidden" onMouseMove={handleMouseMove}>
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-900 to-blue-900 mix-blend-multiply opacity-70" />
-        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/path/to/your/image.jpg')" }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-900 to-blue-900 opacity-50" />
+        {/* Main Background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-purple-950 via-purple-900 to-black" />
+        
+        {/* Decorative Lines */}
+        <div className="absolute inset-0 pointer-events-none">
+          {/* Top Right Corner */}
+          <div className="absolute top-12 right-12">
+            <div className="w-48 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+            <div className="h-48 w-[2px] absolute right-0 top-0 bg-gradient-to-b from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+          </div>
+          
+          {/* Bottom Left Corner */}
+          <div className="absolute bottom-12 left-12">
+            <div className="w-48 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+            <div className="h-48 w-[2px] absolute left-0 bottom-0 bg-gradient-to-b from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+          </div>
+
+          {/* Additional Corner Lines */}
+          <div className="absolute top-12 left-12">
+            <div className="w-48 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+            <div className="h-48 w-[2px] absolute left-0 top-0 bg-gradient-to-b from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+          </div>
+          
+          <div className="absolute bottom-12 right-12">
+            <div className="w-48 h-[2px] bg-gradient-to-r from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+            <div className="h-48 w-[2px] absolute right-0 bottom-0 bg-gradient-to-b from-transparent via-purple-400 to-transparent shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
+          </div>
+        </div>
+        
         <AnimatePresence>
           {emojis.map((emoji) => (
             <MusicEmoji key={emoji.id} x={emoji.x} y={emoji.y} emoji={emoji.emoji} />
           ))}
         </AnimatePresence>
-        
-        <div className="relative container mx-auto px-4 h-full flex items-center justify-center pt-20">
+
+        <div className="relative z-30 container mx-auto px-4 h-full flex items-center justify-center pt-20">
           <div className="max-w-5xl animate-fade-in text-center relative">
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
@@ -109,7 +135,7 @@ const ClientComponent = () => {
               transition={{ duration: 0.6, delay: 0.2 }}
               className="text-5xl md:text-7xl lg:text-9xl font-extrabold mb-8 bg-clip-text text-transparent bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 tracking-tight drop-shadow-2xl text-center"
             >
-               Modern Guitar🎸
+              Modern Guitar🎸
             </motion.h1>
             
             <motion.p 
@@ -185,7 +211,7 @@ const ClientComponent = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.4 }}
-              className="p-6 rounded-xl bg-gradient-to-br from-purple-900/50 to-pink-900/50 backdrop-blur-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 group min-h-[200px] flex flex-col justify-center cursor-pointer"
+              className="p-6 rounded-xl bg-gradient-to-br from-purple-950 to-purple-900 backdrop-blur-sm transition-all hover:scale-105 hover:shadow-2xl hover:shadow-purple-500/20 group min-h-[200px] flex flex-col justify-center cursor-pointer"
             >
               <FaMusic className="w-12 h-12 text-purple-400 mb-4 group-hover:scale-110 transition-transform" />
               <h3 className="text-3xl font-bold mb-3">Jam Room</h3>
