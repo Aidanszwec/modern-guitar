@@ -48,23 +48,25 @@ const MusicEmoji = ({ x, y, emoji }: { x: number; y: number; emoji: string }) =>
 const ClientComponent = () => {
   const { openSignupModal } = useSignup();
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [emojis, setEmojis] = useState<{ id: number; x: number; y: number; emoji: string }[]>([]);
+  const [emojis, setEmojis] = useState<{ id: string; x: number; y: number; emoji: string }[]>([]);
   const [currentEmojiIndex, setCurrentEmojiIndex] = useState(0);
+  const [emojiCounter, setEmojiCounter] = useState(0);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     setMousePosition({ x: e.clientX, y: e.clientY });
     if (Math.random() > 0.9) {
+      setEmojiCounter(prev => prev + 1);
       setEmojis((prevEmojis) => [
         ...prevEmojis,
         { 
-          id: Date.now(), 
+          id: `${Date.now()}-${emojiCounter}`, 
           x: e.clientX, 
           y: e.clientY, 
           emoji: musicEmojis[currentEmojiIndex]
         },
       ]);
     }
-  }, [currentEmojiIndex]);
+  }, [currentEmojiIndex, emojiCounter]);
 
   const handleTabLibraryClick = () => {
     openSignupModal(['Select Your Favorite Artists (choose multiple)', 'What features do you want to see? (optional)']);
